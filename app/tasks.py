@@ -6,6 +6,12 @@ from . import database
 blueprint = flask.Blueprint("tasks", __name__)
 
 
+def get_tasks_count():
+    tasks_count = database.Task.select().where((database.Task.status == "pending") |
+                                               (database.Task.status == "running")).count()
+    return tasks_count
+
+
 @blueprint.route('/tasks', methods=['GET'])
 def get_tasks():
     """List all tasks.py."""
@@ -53,6 +59,8 @@ def get_logs(id):
 
 @blueprint.route('/tasks/', methods=['POST'])
 def create_task():
+    if get_tasks_count() >= 100:
+        return flask.jsonify({"error": "limit tasks exceeded, delete any existing tasks before"}), 400
     """Create the new docker task"""
     if "data" not in flask.request.json:
         return flask.jsonify({"error": "data is required"}), 400
