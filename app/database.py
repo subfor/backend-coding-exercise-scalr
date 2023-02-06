@@ -61,8 +61,8 @@ class Task(peewee.Model):
                 "execution-time": self.execution_time
             },
             "links": {
-                "self": f"{base_url}/tasks/{self.id}",
-                "logs": f"{base_url}/tasks/{self.id}/logs"
+                "self": f"{base_url}{self.id}",
+                "logs": f"{base_url}{self.id}/logs"
             },
 
         }

@@ -7,6 +7,10 @@ import typing
 
 import logging
 import sys
+
+from docker_client import run_command
+
+
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
@@ -39,11 +43,16 @@ class Worker:
 
     def _process_task(self, task: database.Task):
         LOG.debug("Processing task %s.", task)
-        raise NotImplementedError
+        task.status = "running"
+        task.save()
+        run_command(task=task)
+        # task.status = "running"
+        # task.save()
 
     def _gather_tasks(self) -> typing.Sequence[database.Task]:
         """Gather all tasks.py in the database."""
-        raise NotImplementedError
+        tasks = database.Task.select().where(database.Task.status == "pending")
+        return tasks
 
     def start(self):
         database.init_database()

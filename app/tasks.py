@@ -1,8 +1,7 @@
 import flask
-
+from peewee import *
 
 from . import database
-
 
 blueprint = flask.Blueprint("tasks", __name__)
 
@@ -16,7 +15,43 @@ def get_tasks():
     })
 
 
-@blueprint.route('/tasks', methods=['POST'])
+@blueprint.route('/tasks/<int:id>', methods=['DELETE'])
+def del_tasks(id):
+    """List all tasks.py."""
+    try:
+
+        task = database.Task.select().where(database.Task.id == id).get()
+        task.delete_instance()
+        task.save()
+    except database.Task.DoesNotExist:
+        return flask.jsonify({"error": "not exist"}), 400
+    return flask.jsonify({"description": "successful operation"}), 204
+
+
+@blueprint.route('/tasks/<int:id>', methods=['GET'])
+def get_task(id):
+    """List all tasks.py."""
+    try:
+        task = database.Task.select().where(database.Task.id == id).get()
+    except database.Task.DoesNotExist:
+        return flask.jsonify({"error": "not exist"}), 400
+    return flask.jsonify({
+        "data": task.to_response(flask.request.base_url)
+    })
+
+
+@blueprint.route('/tasks/<int:id>/logs', methods=['GET'])
+def get_logs(id):
+    try:
+        task = database.Task.select().where(database.Task.id == id).get()
+    except database.Task.DoesNotExist:
+        return flask.jsonify({"error": "not exist"}), 400
+    response = flask.make_response(task.logs, 200)
+    response.mimetype = "text/plain"
+    return response
+
+
+@blueprint.route('/tasks/', methods=['POST'])
 def create_task():
     """Create the new docker task"""
     if "data" not in flask.request.json:
@@ -36,4 +71,3 @@ def create_task():
     )
 
     return flask.jsonify({"data": task.to_response(flask.request.base_url)}), 201
-
