@@ -46,8 +46,6 @@ class Worker:
         task.status = "running"
         task.save()
         run_command(task=task)
-        # task.status = "running"
-        # task.save()
 
     def _gather_tasks(self) -> typing.Sequence[database.Task]:
         """Gather all tasks.py in the database."""
@@ -70,5 +68,6 @@ class Worker:
             self.wait()
 
 
-w = Worker()
-w.start()
+if __name__ == "__main__":
+    w = Worker(num_of_workers=2)
+    w.start()
